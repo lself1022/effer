@@ -111,7 +111,7 @@ export const makeReducer = (initialState, updateFn) => Effect.gen(function* () {
   yield* Effect.gen(function* () {
     const msg = yield* updateQueue.take;
     yield* SubscriptionRef.updateEffect(subRef, state => updateFn(state, msg));
-  }).pipe(Effect.forever, Effect.forkDaemon);
+  }).pipe(Effect.forever, Effect.fork);
   const dispatch = msg => Queue.unsafeOffer(updateQueue, msg);
   return {
     stream: subRef.changes,
@@ -119,6 +119,7 @@ export const makeReducer = (initialState, updateFn) => Effect.gen(function* () {
   };
 });
 export const makeState = initialState => Effect.gen(function* () {
+  yield* Effect.log('switched to regular fork...');
   const subRef = yield* SubscriptionRef.make(initialState);
   const updateQueue = yield* Queue.unbounded();
   yield* Effect.gen(function* () {
