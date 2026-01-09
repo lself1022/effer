@@ -119,7 +119,6 @@ export const makeReducer = (initialState, updateFn) => Effect.gen(function* () {
   };
 });
 export const makeState = initialState => Effect.gen(function* () {
-  yield* Effect.log('switched to regular fork...');
   const subRef = yield* SubscriptionRef.make(initialState);
   const updateQueue = yield* Queue.unbounded();
   yield* Effect.gen(function* () {

@@ -145,7 +145,6 @@ export const makeReducer = <A,M,E=never,R=never>(initialState: A, updateFn: (sta
 })
 
 export const makeState = <A>(initialState: A) => Effect.gen(function*() {
-    yield* Effect.log('switched to regular fork...')
     const subRef = yield* SubscriptionRef.make<A>(initialState)
     const updateQueue = yield* Queue.unbounded<(val: A) => A>()
 
