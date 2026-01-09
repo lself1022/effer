@@ -134,7 +134,7 @@ const makeState = initialState => _effect.Effect.gen(function* () {
   yield* _effect.Effect.gen(function* () {
     const updateFn = yield* updateQueue.take;
     yield* _effect.SubscriptionRef.update(subRef, updateFn);
-  }).pipe(_effect.Effect.forever, _effect.Effect.forkDaemon);
+  }).pipe(_effect.Effect.forever, _effect.Effect.fork);
   const set = val => _effect.Queue.unsafeOffer(updateQueue, _ => val);
   const update = updateFn => _effect.Queue.unsafeOffer(updateQueue, updateFn);
   return {
