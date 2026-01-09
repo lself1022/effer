@@ -137,7 +137,7 @@ export const makeReducer = <A,M,E=never,R=never>(initialState: A, updateFn: (sta
         yield* SubscriptionRef.updateEffect(subRef, state => updateFn(state, msg))
     }).pipe(
         Effect.forever,
-        Effect.forkDaemon
+        Effect.fork
     )
     const dispatch = (msg: M) => Queue.unsafeOffer(updateQueue, msg)
 
@@ -153,7 +153,7 @@ export const makeState = <A>(initialState: A) => Effect.gen(function*() {
         yield* SubscriptionRef.update(subRef, updateFn)
     }).pipe(
         Effect.forever,
-        Effect.forkDaemon
+        Effect.fork
     )
     const set = (val: A) => Queue.unsafeOffer(updateQueue, _ => val) 
     const update = (updateFn: (oldValue: A) => A) => Queue.unsafeOffer(updateQueue,updateFn)
