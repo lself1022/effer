@@ -153,7 +153,7 @@ export const makeState = <A>(initialState: A) => Effect.gen(function*() {
         yield* SubscriptionRef.update(subRef, updateFn)
     }).pipe(
         Effect.forever,
-        Effect.forkDaemon
+        Effect.fork
     )
     const set = (val: A) => Queue.unsafeOffer(updateQueue, _ => val) 
     const update = (updateFn: (oldValue: A) => A) => Queue.unsafeOffer(updateQueue,updateFn)
