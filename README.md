@@ -104,7 +104,7 @@ html`
 `
 ```
 
-To manage state, Effer provides two helper functions: makeReducer and makeState. These are very similar to useState and useEffect in React, except you use them outside your UI components as part of your business logic.
+To manage state, Effer provides two helper functions: makeReducer and makeState. These are very similar to useReducer and useState in React, except you use them outside your UI components as part of your business logic.
 
 makeReducer lets you define a state and update it using events:
 
