@@ -47,7 +47,7 @@ const _Counter = () => Effect.gen(function*() {
             >
                 - 1
             </button>
-            Count is ${attach(counterStream)}
+            Count is ${yield* attach(counterStream)}
             <button 
                 class="btn btn-primary btn-sm counter-button" 
                 id="incButton" 
@@ -97,7 +97,7 @@ In the UI, we need to represent data changing over time. Effect gives us Streams
 
 ```ts
 html`
-    Count is ${attach(counterStream)}
+    Count is ${yield* attach(counterStream)}
 `
 ```
 
