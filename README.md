@@ -246,3 +246,17 @@ const startingCount: number = yield* getQueryParam('count').pipe(
 )
 ```
 
+## Live Examples
+
+You can see example code and play around with Effer by forking this CodeSandbox [HERE](https://codesandbox.io/p/devbox/effer-examples-cj8lcy)
+
+Where to find specific examples:
+- the `attach()` function: All of the Effer components in the sandboxs use attach
+- the `makeState()` function: counter.ts
+- the `makeReducer()` function: todo.controller.ts
+- the `makeAsyncResult()` function: posts.api.ts and posts.view.ts
+- handling navigation: app.ts
+- getting a query param: counter.ts
+- using browser storage: todo.controller.ts
+- making HTTP requests/working with Effect clients: posts.api.ts and posts.view.ts
+- working with third party libraries like AG Grid: todo.controller.ts and todo.view.ts
