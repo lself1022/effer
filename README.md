@@ -63,6 +63,25 @@ export class Counter extends Effect.Service<Counter>()('Counter', {
     effect: _Counter(),
     dependencies: [CounterService.Default, Effer.Default]
 }) {}
+
+// INSIDE main.ts
+
+const ComponentsLayer = Layer.empty.pipe(
+  Layer.merge(Counter.Default),
+  // ... merge in any other component layers
+)
+
+App().pipe(
+  Effect.andThen(
+    // render our component to the DOM element with ID 'app'
+    app => render(app, document.getElementById('app')!)
+  ),
+  Layer.effectDiscard,
+  Layer.provide(ComponentsLayer), // merge in Component layers
+  Layer.provideMerge(layer), // merge in Effer layer
+  Layer.launch, // launch our combined Effer app layer
+  BrowserRuntime.runMain
+)
 ```
 
 
@@ -164,11 +183,7 @@ const [counterStream, counterQueue] = yield* CounterService
 If we have an effect that as asynchronous, like making an HTTP call, we can wrap that effect in makeAsyncResult:
 
 ```ts
-const clientBuilder = Effect.gen(function*() {
-    const client = yield* HttpApiClient.make(ThingsApi, { baseUrl: "https://mybackendurl.com/" })
-    const getThingsEffect = client.Thing.getThings()
-    return makeAsyncResult(getThingsEffect) // wrapping our async client call in makeAsyncResult
-})
+const posts = yield* makeAsyncResult(getPostsAsyncEffect) // an async effect wrapped in makeAsyncResult
 ```
 
 When you wrap an `Effect<A,E,R>` in makeAsyncResult, you get 3 things. The first is a `Stream<Result<A,E>, never, R>` where `Result<A,E>` is:
@@ -184,7 +199,8 @@ export type Result<A,E> = Data.TaggedEnum<{
 The other thing makeAsyncResult gives us is a helper function called `match()` for matching the state of the streaming Result values: 
 
 ```ts
-const posts = yield* makeAsyncResult(getPostsAsync()) // an async effect wrapped in makeAsyncResult
+const posts = yield* makeAsyncResult(getPostsAsyncEffect) // an async effect wrapped in makeAsyncResult
+// mapping the state of our Result to what we want to display on screen
 const postsTable = posts.stream.pipe(
     Stream.map(postsClient.match({
         Loading: () => html`<h1>Loading...</h1>`, // if the async effect is still loading, show this
@@ -194,7 +210,7 @@ const postsTable = posts.stream.pipe(
 )
 ```
 
-Note that since `Result<A,E>` is a TaggedEnum, `match()` is exactly the same as the `$match()` function you get from creating a TaggedEnum.
+Note that since `Result<A,E>` is a TaggedEnum, `match()` is exactly the same as the `$match()` function you get from creating a TaggedEnum. See the [Effect Documentation](https://effect.website/docs/data-types/data/#union-of-tagged-structs)
 
 ## Navigation and URLs
 
@@ -215,21 +231,17 @@ You can use this inside of an Effect (like an Effer component) to navigate like 
 export const App = () => Effect.gen(function*() {
     const { pathStream } = yield* NavService // get the pathStream from NavService
     const { attach } = yield* Effer
-    // the components we want to show as pages
-    const counters = yield* Counter
-    const posts = yield* Posts
-    const todos = yield* Todos
     // a function that maps from a path string to the Effer component we want to display
     const navFn = (path: string) => {
         switch (path) {
             case '/counters':
-                return counters
+                return yield* Counter
             case '/todos':
-                return todos
+                return yield* Todos
             case '/posts':
-                return posts
+                return yield* Posts
             default:
-                return todos
+                return yield* Todos
         }
     }
 
