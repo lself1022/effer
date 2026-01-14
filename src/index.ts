@@ -111,7 +111,7 @@ export class Effer extends Effect.Service<Effer>()('Effer', {
  * Creates a stream of the latest state value, and a queue to update the value.
  * @param initialState The starting state value
  * @param updateFn An effectful function that takes the old state, an update message, and returns a new state
- * @returns A tuple of the stream of the current state value and a queue to dispatch update messages
+ * @returns An object with a stream field representing a stream of the current state value and a dispatch method for dispatching update messages
  * 
  * ```ts
  * type Msg = Data.TaggedEnum<{
@@ -125,7 +125,7 @@ export class Effer extends Effect.Service<Effer>()('Effer', {
  * })
  * 
  * // Inside an Effect
- * const [ countStream, countQueue ] = yield* makeReducer(0, counterReducer)
+ * const {stream, dispatch} = yield* makeReducer(0, counterReducer)
  * ```
  */
 export const makeReducer = <A,M,E=never,R=never>(initialState: A, updateFn: (state: A, msg: M) => Effect.Effect<A,E,R>) => Effect.gen(function*() {

@@ -14,46 +14,33 @@ Example:
 
 ```ts
 // INSIDE counter.ts
+import { Effect } from "effect";
+import { Effer, NavService, html, makeState } from "effer";
 
-import { Data, Effect } from "effect";
-import { Effer, html, makeReducer } from "effer";
-
-type Msg = Data.TaggedEnum<{
-    Increment: {};
-    Decrement: {};
-}>
-const { Increment, Decrement, $match } = Data.taggedEnum<Msg>()
-
-const makeCounterState = makeReducer(
-    0, 
-    (state: number, msg: Msg) => $match({
-            Increment: () => Effect.succeed(state + 1),
-            Decrement: () => Effect.succeed(state - 1),
-        })(msg)
-)
-
-export class CounterService extends Effect.Service<CounterService>()('CounterService', {
-    effect: makeCounterState
+// Our business logic is created seperately from our views
+// This makes it easy to mock or modify the behavior of a component
+export class CountState extends Effect.Service<CountState>()("CountState", {
+    effect: makeState<number>(0)
 }) {}
 
-const _Counter = () => Effect.gen(function*() {
-    const { attach, queueMsg } = yield* Effer
-    const [counterStream, counterQueue] = yield* CounterService
+export const Counter = () => Effect.gen(function*() {
+    const { attach } = yield* Effer
+    const count = yield* CountState
 
     return html`
         <section class="counter-container d-flex flex-row align-items-baseline justify-content-center">
             <button 
                 class="btn btn-primary btn-sm counter-button" 
                 id="decButton" 
-                @click=${queueMsg(counterQueue, () => Increment())}
+                @click=${() => count.update(n => n - 1)}
             >
                 - 1
             </button>
-            Count is ${yield* attach(counterStream)}
+            Count is ${yield* attach(count.stream)}
             <button 
                 class="btn btn-primary btn-sm counter-button" 
                 id="incButton" 
-                @click=${queueMsg(counterQueue, () => Decrement())}
+                @click=${() => count.update(n => n + 1)}
             >
                 + 1
             </button>
@@ -61,43 +48,29 @@ const _Counter = () => Effect.gen(function*() {
     `
 })
 
-// Optional - make your component a service for ease of dependency management and mocking
-
-export class Counter extends Effect.Service<Counter>()('Counter', {
-    effect: _Counter(),
-    dependencies: [CounterService.Default, Effer.Default]
-}) {}
-
 // INSIDE main.ts
+import { BrowserRuntime } from "@effect/platform-browser";
+import { Effect, Layer } from "effect";
+import { layer, render } from "effer";
+import { Counter } from "./counter";
 
-const ComponentsLayer = Layer.empty.pipe(
-  Layer.merge(Counter.Default),
-  // ... merge in any other component layers
-)
-
-App().pipe(
+Counter().pipe(
   Effect.andThen(
     // render our component to the DOM element with ID 'app'
     app => render(app, document.getElementById('app')!)
   ),
   Layer.effectDiscard, // transform the render effect into a Layer
-  Layer.provide(ComponentsLayer), // merge in Component layers
   Layer.provideMerge(layer), // merge in Effer layer
   Layer.launch, // launch our combined Effer app layer
   BrowserRuntime.runMain
 )
 ```
 
-
-To bring our UI and business logic together, Effer gives us two tools: attach and queueMsg, both available in the Effer service.
-
-```ts
-const { attach, queueMsg } = yield* Effer
-```
-
 In the UI, we need to represent data changing over time. Effect gives us Streams as a way to do that. The attach method of the Effer service lets you "attach" a stream (or anything that can be converted to a Stream) to the UI, and the UI will automatically display the most up-to-date value of that Stream.
 
 ```ts
+const { attach } = yield* Effer
+
 html`
     Count is ${yield* attach(counterStream)}
 `
@@ -115,25 +88,13 @@ type Attachable<A,E,R> =
     | Channel<Chunk.Chunk<A>, unknown, E, unknown, unknown, unknown, R> 
 ```
 
-When we need to handle events from the UI, we do so with the queueMsg method of the Effer service. This function can go anywhere an event listener callback is expected (like onclick, onchange, etc.). It takes a queue to send the event to, and a function that maps from the DOM event to the queue's event that we want to dispatch:
-
-```ts
-html`
-    <button 
-        class="btn btn-primary btn-sm counter-button" 
-        id="decButton" 
-        @click=${queueMsg(counterQueue, (e: MouseEvent) => Increment())}
-    >
-`
-```
-
 ## Managing State
 
 ### makeReducer - For Complex State or Logic
 
 To manage state, Effer provides two helper functions: makeReducer and makeState. These are very similar to useReducer and useState in React, except you use them outside your UI components as part of your business logic.
 
-makeReducer lets you define a state and update it using events:
+makeReducer lets you define a state and update it by dispatching messages:
 
 ```ts
 type Msg = Data.TaggedEnum<{
@@ -156,30 +117,25 @@ export class CounterService extends Effect.Service<CounterService>()('CounterSer
 }) {}
 ```
 
-We define the expected update messages as Increment and Decrement, and we provide a function that takes the old state and a message, and provides a new updated state. Now when we inject the service, we will get the stream of values as well as a queue to send updates to:
+We define the expected update messages as Increment and Decrement, and we provide a function that takes the old state and a message, and provides a new updated state. Now when we inject the service, we will get an object with this interface:
 
 ```ts
-// counterQueue will accept either Increment or Decrement and the stream will update 
-// according to the update function
-const [counterStream, counterQueue] = yield* CounterService
+{
+    stream: Stream<A> // where A represents our state type
+    dispatch: (msg: M) => boolean // where M represents the type of message we can use to update our state
+}
 ```
 
 ### makeState - For Simple State Management
 
-makeState is very similar, but more simplified. We just provide an initial state, and the queue will accept new state values instead of messages. 
+makeState is very similar, but more simplified. We just provide an initial state, and we get an object with this interface:
 
 ```ts
-const makeCounterState = makeState(0)
-
-// Making our state values a Service so we can easily pass it around
-export class CounterService extends Effect.Service<CounterService>()('CounterService', {
-    effect: makeCounterState
-}) {}
-```
-
-```ts
-// the counterQueue now accepts a number (the new count) instead of update messages
-const [counterStream, counterQueue] = yield* CounterService
+{
+    stream: Stream<A> // where A represents our state type
+    set: (val: A) => boolean // replace the current value with a new value
+    update: (updateFn: (oldValue: A) => A) => boolean // update with a function to access old value
+}
 ```
 
 ### makeAsyncResult - For Async State and Logic
@@ -215,6 +171,22 @@ const postsTable = posts.stream.pipe(
 ```
 
 Note that since `Result<A,E>` is a TaggedEnum, `match()` is exactly the same as the `$match()` function you get from creating a TaggedEnum. See the [Effect Documentation](https://effect.website/docs/data-types/data/#union-of-tagged-structs)
+
+## Logic Outside of State Flows
+
+If you have logic that doesn't fit into a state or reducer update, Effer offers the queueMessage function. This function can go anywhere an event listener callback is expected (like onclick, onchange, etc.). It takes a queue to send the event to, and a function that maps from the DOM event to the queue's value type that we want to dispatch:
+
+```ts
+html`
+    <button 
+        class="btn btn-primary btn-sm counter-button" 
+        id="decButton" 
+        @click=${queueMsg(counterQueue, (e: MouseEvent) => Increment())}
+    >
+`
+```
+
+You can then take that queue (in this case, counterQueue) and run it into a Stream, working with the events as you need to.
 
 ## Navigation and URLs
 
