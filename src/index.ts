@@ -208,16 +208,16 @@ export class NavService extends Context.Tag('NavService')<
     }))
 }
 
-export type RemoteData<T,E> = Data.TaggedEnum<{
+export type Result<A,E> = Data.TaggedEnum<{
     Loading: {}
-    Success: { readonly data: T }
+    Success: { readonly data: A }
     Failure: { readonly error: E }
 }> & {}
 
 export const makeAsyncResult = <A,E,R>(effect: Effect.Effect<A,E,R>) => {
-    const { Loading, Success, Failure, $is, $match } = Data.taggedEnum<RemoteData<A,E>>()
+    const { Loading, Success, Failure, $is, $match } = Data.taggedEnum<Result<A,E>>()
     const startStream = Stream.make(Loading())
-    const resultStream: Stream.Stream<RemoteData<A,E>,never,R> = Stream.asyncPush<RemoteData<A,E>,never,R>(
+    const resultStream: Stream.Stream<Result<A,E>,never,R> = Stream.asyncPush<Result<A,E>,never,R>(
         emit => Effect.gen(function*() {
             const result = yield* effect.pipe(
                 Effect.map(data => Success({data})),
