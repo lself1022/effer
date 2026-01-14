@@ -78,7 +78,7 @@ App().pipe(
     // render our component to the DOM element with ID 'app'
     app => render(app, document.getElementById('app')!)
   ),
-  Layer.effectDiscard,
+  Layer.effectDiscard, // transform the render effect into a Layer
   Layer.provide(ComponentsLayer), // merge in Component layers
   Layer.provideMerge(layer), // merge in Effer layer
   Layer.launch, // launch our combined Effer app layer
