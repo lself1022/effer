@@ -11,6 +11,8 @@ WIP.
 Example:
 
 ```ts
+// INSIDE counter.ts
+
 import { Data, Effect } from "effect";
 import { Effer, html, makeReducer } from "effer";
 
