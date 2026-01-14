@@ -4,7 +4,9 @@ An Effect native UI library based on lit-html.
 
 ## Installation
 
-WIP.
+```
+npm install effer
+```
 
 ## Creating a Counter with Effer
 
