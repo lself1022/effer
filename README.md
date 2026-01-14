@@ -104,6 +104,10 @@ html`
 `
 ```
 
+## Managing State
+
+### makeReducer - For Complex State or Logic
+
 To manage state, Effer provides two helper functions: makeReducer and makeState. These are very similar to useReducer and useState in React, except you use them outside your UI components as part of your business logic.
 
 makeReducer lets you define a state and update it using events:
@@ -137,6 +141,8 @@ We define the expected update messages as Increment and Decrement, and we provid
 const [counterStream, counterQueue] = yield* CounterService
 ```
 
+### makeState - For Simple State Management
+
 makeState is very similar, but more simplified. We just provide an initial state, and the queue will accept new state values instead of messages. 
 
 ```ts
@@ -152,3 +158,103 @@ export class CounterService extends Effect.Service<CounterService>()('CounterSer
 // the counterQueue now accepts a number (the new count) instead of update messages
 const [counterStream, counterQueue] = yield* CounterService
 ```
+
+### makeAsyncResult - For Async State and Logic
+
+If we have an effect that as asynchronous, like making an HTTP call, we can wrap that effect in makeAsyncResult:
+
+```ts
+const clientBuilder = Effect.gen(function*() {
+    const client = yield* HttpApiClient.make(ThingsApi, { baseUrl: "https://mybackendurl.com/" })
+    const getThingsEffect = client.Thing.getThings()
+    return makeAsyncResult(getThingsEffect) // wrapping our async client call in makeAsyncResult
+})
+```
+
+When you wrap an `Effect<A,E,R>` in makeAsyncResult, you get 3 things. The first is a `Stream<Result<A,E>, never, R>` where `Result<A,E>` is:
+
+```ts
+export type Result<A,E> = Data.TaggedEnum<{
+    Loading: {}
+    Success: { readonly data: A }
+    Failure: { readonly error: E }
+}> & {}
+```
+
+The other thing makeAsyncResult gives us is a helper function called `match()` for matching the state of the streaming Result values: 
+
+```ts
+const posts = yield* makeAsyncResult(getPostsAsync()) // an async effect wrapped in makeAsyncResult
+const postsTable = posts.stream.pipe(
+    Stream.map(postsClient.match({
+        Loading: () => html`<h1>Loading...</h1>`, // if the async effect is still loading, show this
+        Success: ({ data }) => data.map(post => PostCard(post)), // if it loaded successfully, show the PostCard component
+        Failure: ({ error }) => html`<p>Error retrieving data: ${error}</p>` // if it errored out, show this
+    }))
+)
+```
+
+Note that since `Result<A,E>` is a TaggedEnum, `match()` is exactly the same as the `$match()` function you get from creating a TaggedEnum.
+
+## Navigation and URLs
+
+Effer offers a NavService for handling things related to navigation and URLs. Here is its interface:
+
+```ts
+interface NavService {
+    url: Ref.Ref<URL>; // the current URL as a Ref
+    pathStream: Stream.Stream<URL>; // a stream of the current URL value for reacting to changes
+    getQueryParam: (name: string) => Effect.Effect<string, NoSuchElementException, never> // helper to get a query param from the URL
+    navigate: typeof window.navigation.navigate; // the window's navigate() method
+}
+```
+
+You can use this inside of an Effect (like an Effer component) to navigate like so:
+
+```ts
+export const App = () => Effect.gen(function*() {
+    const { pathStream } = yield* NavService // get the pathStream from NavService
+    const { attach } = yield* Effer
+    // the components we want to show as pages
+    const counters = yield* Counter
+    const posts = yield* Posts
+    const todos = yield* Todos
+    // a function that maps from a path string to the Effer component we want to display
+    const navFn = (path: string) => {
+        switch (path) {
+            case '/counters':
+                return counters
+            case '/todos':
+                return todos
+            case '/posts':
+                return posts
+            default:
+                return todos
+        }
+    }
+
+    // getting the pathname from the pathStream then running that through our nav function
+    const page = pathStream.pipe(
+        Stream.map(url => url.pathname),
+        Stream.map(navFn)
+    )
+    // attaching the page stream to the template so the current page displays
+    return html`
+        <main class="w-100">
+            ${ yield* attach(page) }
+        </main>
+    `
+})
+```
+
+You can also use NavService to retrieve query params from the current URL:
+
+```ts
+const {getQueryParam} = yield* NavService
+// Getting a "count" query param and parsing it into an integer
+const startingCount: number = yield* getQueryParam('count').pipe(
+    Effect.map(parseInt),
+    Effect.orElseSucceed(() => 0)
+)
+```
+
