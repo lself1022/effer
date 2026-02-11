@@ -4,6 +4,8 @@
 
 import { Context, Effect, Layer, Ref, Stream } from "effect";
 import { NoSuchElementException } from "effect/Cause";
+import * as TypedNav from "@typed/navigation";
+import { GetRandomValues } from "@typed/id";
 
 /**
  * @since 1.0.0
@@ -52,4 +54,7 @@ export const BrowserLayer = Layer.effect(Nav, Effect.gen(function*() {
          */
         getQueryParam
     }
-}))
+})).pipe(
+    Layer.provide(TypedNav.fromWindow(window)),
+    Layer.provide(GetRandomValues.CryptoRandom)
+)
