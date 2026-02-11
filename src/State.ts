@@ -23,7 +23,7 @@ import { Data, Effect, Queue, Stream, SubscriptionRef } from "effect";
  * })
  * 
  * // Inside an Effect
- * const {stream, dispatch} = yield* reducer(0, counterReducer)
+ * const {stream, dispatch} = yield* State.reducer(0, counterReducer)
  * ```
  */
 export const reducer = <A,M,E=never,R=never>(initialState: A, updateFn: (state: A, msg: M) => Effect.Effect<A,E,R>) => Effect.gen(function*() {

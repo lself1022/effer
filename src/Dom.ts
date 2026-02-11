@@ -27,7 +27,7 @@ export const render = (template: TemplateResult, root: RenderRootNode) =>
 
 /**
  * @since 1.0.0
- * Types that can be attached to the DOM template using Effer's 'attach' method
+ * Types that can be attached to the DOM template using Effer's 'replace' and 'append' methods
  */
 export type Attachable<A,E,R> = 
     | Channel<Chunk.Chunk<A>, unknown, E, unknown, unknown, unknown, R> 
@@ -60,13 +60,13 @@ const attachableToStream = <A,E=never,R=never>(val: Attachable<A,E,R>) => {
 
 /**
  * @since 1.0.0
- * Attaches any Attachable value to the template:
+ * Attaches any Attachable value to the template, replacing old values as new values are produced:
  * ```ts
  * const Counter = () => Effect.gen(function*() {
- *   [ countRef, countQueue ] = yield* CounterService // service made with makeReducer or makeState
+ *   counter = yield* CounterService // service made with State.reducer or State.simple
  * 
  *   return html`
- *     <p>The count is ${yield* attach(countRef)}</p>
+ *     <p>The count is ${yield* Dom.replace(counter.stream)}</p>
  *   `
  * })
  * ```
@@ -106,13 +106,11 @@ fn: (value: A) => unknown,
  * as well as a mapping function from the DOM event to the queue's expected event type
  * ```ts
  * const Counter = () => Effect.gen(function*() {
- *   [ countRef, countQueue ] = yield* CounterService // service made with makeReducer
+ *   const numberQueue = yield* Queue.unbounded<number>()
  * 
  *   return html`
- *     <button 
- *       ＠click=${queueMsg(countQueue, () => Increment())}
- *     > // Increment() is an action defined as part of the CounterService reducer
- *       The count is ${yield* attach(countRef)}
+ *     <button ＠click=${queueMsg(numberQueue, (e) => 0)}>
+ *       Queue up a number!
  *     </button>
  *   `
  * })
