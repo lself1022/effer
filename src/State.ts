@@ -31,15 +31,15 @@ export const reducer = <A,M,E=never,R=never>(initialState: A, updateFn: (state: 
     const updateQueue = yield* Queue.unbounded<M>()
 
     yield* Effect.gen(function*() {
-        const msg = yield* updateQueue.take
+        const msg: M = yield* Queue.take(updateQueue)
         yield* SubscriptionRef.updateEffect(subRef, state => updateFn(state, msg))
     }).pipe(
         Effect.forever,
-        Effect.fork
+        Effect.forkChild
     )
-    const dispatch = (msg: M) => Queue.unsafeOffer(updateQueue, msg)
+    const dispatch = (msg: M) => Queue.offerUnsafe(updateQueue, msg)
 
-    return {stream: subRef.changes, dispatch}
+    return {stream: SubscriptionRef.changes(subRef), dispatch}
 })
 
 /**
@@ -50,42 +50,48 @@ export const simple = <A>(initialState: A) => Effect.gen(function*() {
     const updateQueue = yield* Queue.unbounded<(val: A) => A>()
 
     yield* Effect.gen(function*() {
-        const updateFn = yield* updateQueue.take
+        const updateFn: (val: A) => A = yield* Queue.take(updateQueue)
         yield* SubscriptionRef.update(subRef, updateFn)
     }).pipe(
         Effect.forever,
-        Effect.fork
+        Effect.forkChild
     )
-    const set = (val: A) => Queue.unsafeOffer(updateQueue, _ => val) 
-    const update = (updateFn: (oldValue: A) => A) => Queue.unsafeOffer(updateQueue,updateFn)
-    return {stream: subRef.changes, set, update} as const
+    const set = (val: A) => Queue.offerUnsafe(updateQueue, _ => val) 
+    const update = (updateFn: (oldValue: A) => A) => Queue.offerUnsafe(updateQueue,updateFn)
+    return {stream: SubscriptionRef.changes(subRef), set, update} as const
 })
 
-/**
- * @since 1.0.0
- */
-export type Result<A,E> = Data.TaggedEnum<{
-    Loading: {}
-    Success: { readonly data: A }
-    Failure: { readonly error: E }
-}> & {}
+// /**
+//  * @since 1.0.0
+//  */
+// export type Result<A,E> = Data.TaggedEnum<{
+//     Loading: {}
+//     Success: { readonly data: A }
+//     Failure: { readonly error: E }
+// }> & {}
+
+export type Loading = { _tag: 'Loading' }
+export const Loading = () => { _tag: 'Loading' }
 
 /**
  * @since 1.0.0
  */
 export const async = <A,E,R>(effect: Effect.Effect<A,E,R>) => {
-    const { Loading, Success, Failure, $is, $match } = Data.taggedEnum<Result<A,E>>()
     const startStream = Stream.make(Loading())
-    const resultStream: Stream.Stream<Result<A,E>,never,R> = Stream.asyncPush<Result<A,E>,never,R>(
-        emit => Effect.gen(function*() {
-            const result = yield* effect.pipe(
-                Effect.map(data => Success({data})),
-                Effect.mapError(error => Failure({error})),
-                Effect.merge
-            )
-            emit.single(result)
-        })
+    const resultStream = effect.pipe(
+        Effect.result,
+        Stream.fromEffect
     )
+    // const resultStream: Stream.Stream<Result<A,E>,never,R> = Stream.asyncPush<Result<A,E>,never,R>(
+    //     emit => Effect.gen(function*() {
+    //         const result = yield* effect.pipe(
+    //             Effect.map(data => Success({data})),
+    //             Effect.mapError(error => Failure({error})),
+    //             Effect.merge
+    //         )
+    //         emit.single(result)
+    //     })
+    // )
 
-    return {stream: Stream.concat(startStream, resultStream), is: $is, match: $match}
+    return {stream: Stream.concat(startStream, resultStream)}
 }

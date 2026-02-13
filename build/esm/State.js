@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import { Data, Effect, Queue, Stream, SubscriptionRef } from "effect";
+import { Effect, Queue, Stream, SubscriptionRef } from "effect";
 /**
  * @since 1.0.0
  * Creates a stream of the latest state value, and a queue to update the value.
@@ -21,19 +21,19 @@ import { Data, Effect, Queue, Stream, SubscriptionRef } from "effect";
  * })
  *
  * // Inside an Effect
- * const {stream, dispatch} = yield* reducer(0, counterReducer)
+ * const {stream, dispatch} = yield* State.reducer(0, counterReducer)
  * ```
  */
 export const reducer = (initialState, updateFn) => Effect.gen(function* () {
   const subRef = yield* SubscriptionRef.make(initialState);
   const updateQueue = yield* Queue.unbounded();
   yield* Effect.gen(function* () {
-    const msg = yield* updateQueue.take;
+    const msg = yield* Queue.take(updateQueue);
     yield* SubscriptionRef.updateEffect(subRef, state => updateFn(state, msg));
-  }).pipe(Effect.forever, Effect.fork);
-  const dispatch = msg => Queue.unsafeOffer(updateQueue, msg);
+  }).pipe(Effect.forever, Effect.forkChild);
+  const dispatch = msg => Queue.offerUnsafe(updateQueue, msg);
   return {
-    stream: subRef.changes,
+    stream: SubscriptionRef.changes(subRef),
     dispatch
   };
 });
@@ -44,41 +44,38 @@ export const simple = initialState => Effect.gen(function* () {
   const subRef = yield* SubscriptionRef.make(initialState);
   const updateQueue = yield* Queue.unbounded();
   yield* Effect.gen(function* () {
-    const updateFn = yield* updateQueue.take;
+    const updateFn = yield* Queue.take(updateQueue);
     yield* SubscriptionRef.update(subRef, updateFn);
-  }).pipe(Effect.forever, Effect.fork);
-  const set = val => Queue.unsafeOffer(updateQueue, _ => val);
-  const update = updateFn => Queue.unsafeOffer(updateQueue, updateFn);
+  }).pipe(Effect.forever, Effect.forkChild);
+  const set = val => Queue.offerUnsafe(updateQueue, _ => val);
+  const update = updateFn => Queue.offerUnsafe(updateQueue, updateFn);
   return {
-    stream: subRef.changes,
+    stream: SubscriptionRef.changes(subRef),
     set,
     update
   };
 });
+export const Loading = () => {
+  _tag: 'Loading';
+};
 /**
  * @since 1.0.0
  */
 export const async = effect => {
-  const {
-    Loading,
-    Success,
-    Failure,
-    $is,
-    $match
-  } = Data.taggedEnum();
   const startStream = Stream.make(Loading());
-  const resultStream = Stream.asyncPush(emit => Effect.gen(function* () {
-    const result = yield* effect.pipe(Effect.map(data => Success({
-      data
-    })), Effect.mapError(error => Failure({
-      error
-    })), Effect.merge);
-    emit.single(result);
-  }));
+  const resultStream = effect.pipe(Effect.result, Stream.fromEffect);
+  // const resultStream: Stream.Stream<Result<A,E>,never,R> = Stream.asyncPush<Result<A,E>,never,R>(
+  //     emit => Effect.gen(function*() {
+  //         const result = yield* effect.pipe(
+  //             Effect.map(data => Success({data})),
+  //             Effect.mapError(error => Failure({error})),
+  //             Effect.merge
+  //         )
+  //         emit.single(result)
+  //     })
+  // )
   return {
-    stream: Stream.concat(startStream, resultStream),
-    is: $is,
-    match: $match
+    stream: Stream.concat(startStream, resultStream)
   };
 };
 //# sourceMappingURL=State.js.map

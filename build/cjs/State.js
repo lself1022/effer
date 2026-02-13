@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.simple = exports.reducer = exports.async = void 0;
+exports.simple = exports.reducer = exports.async = exports.Loading = void 0;
 var _effect = require("effect");
 /**
  * @since 1.0.0
@@ -28,19 +28,19 @@ var _effect = require("effect");
  * })
  *
  * // Inside an Effect
- * const {stream, dispatch} = yield* reducer(0, counterReducer)
+ * const {stream, dispatch} = yield* State.reducer(0, counterReducer)
  * ```
  */
 const reducer = (initialState, updateFn) => _effect.Effect.gen(function* () {
   const subRef = yield* _effect.SubscriptionRef.make(initialState);
   const updateQueue = yield* _effect.Queue.unbounded();
   yield* _effect.Effect.gen(function* () {
-    const msg = yield* updateQueue.take;
+    const msg = yield* _effect.Queue.take(updateQueue);
     yield* _effect.SubscriptionRef.updateEffect(subRef, state => updateFn(state, msg));
-  }).pipe(_effect.Effect.forever, _effect.Effect.fork);
-  const dispatch = msg => _effect.Queue.unsafeOffer(updateQueue, msg);
+  }).pipe(_effect.Effect.forever, _effect.Effect.forkChild);
+  const dispatch = msg => _effect.Queue.offerUnsafe(updateQueue, msg);
   return {
-    stream: subRef.changes,
+    stream: _effect.SubscriptionRef.changes(subRef),
     dispatch
   };
 });
@@ -52,42 +52,40 @@ const simple = initialState => _effect.Effect.gen(function* () {
   const subRef = yield* _effect.SubscriptionRef.make(initialState);
   const updateQueue = yield* _effect.Queue.unbounded();
   yield* _effect.Effect.gen(function* () {
-    const updateFn = yield* updateQueue.take;
+    const updateFn = yield* _effect.Queue.take(updateQueue);
     yield* _effect.SubscriptionRef.update(subRef, updateFn);
-  }).pipe(_effect.Effect.forever, _effect.Effect.fork);
-  const set = val => _effect.Queue.unsafeOffer(updateQueue, _ => val);
-  const update = updateFn => _effect.Queue.unsafeOffer(updateQueue, updateFn);
+  }).pipe(_effect.Effect.forever, _effect.Effect.forkChild);
+  const set = val => _effect.Queue.offerUnsafe(updateQueue, _ => val);
+  const update = updateFn => _effect.Queue.offerUnsafe(updateQueue, updateFn);
   return {
-    stream: subRef.changes,
+    stream: _effect.SubscriptionRef.changes(subRef),
     set,
     update
   };
 });
+exports.simple = simple;
+const Loading = () => {
+  _tag: 'Loading';
+};
 /**
  * @since 1.0.0
  */
-exports.simple = simple;
+exports.Loading = Loading;
 const async = effect => {
-  const {
-    Loading,
-    Success,
-    Failure,
-    $is,
-    $match
-  } = _effect.Data.taggedEnum();
   const startStream = _effect.Stream.make(Loading());
-  const resultStream = _effect.Stream.asyncPush(emit => _effect.Effect.gen(function* () {
-    const result = yield* effect.pipe(_effect.Effect.map(data => Success({
-      data
-    })), _effect.Effect.mapError(error => Failure({
-      error
-    })), _effect.Effect.merge);
-    emit.single(result);
-  }));
+  const resultStream = effect.pipe(_effect.Effect.result, _effect.Stream.fromEffect);
+  // const resultStream: Stream.Stream<Result<A,E>,never,R> = Stream.asyncPush<Result<A,E>,never,R>(
+  //     emit => Effect.gen(function*() {
+  //         const result = yield* effect.pipe(
+  //             Effect.map(data => Success({data})),
+  //             Effect.mapError(error => Failure({error})),
+  //             Effect.merge
+  //         )
+  //         emit.single(result)
+  //     })
+  // )
   return {
-    stream: _effect.Stream.concat(startStream, resultStream),
-    is: $is,
-    match: $match
+    stream: _effect.Stream.concat(startStream, resultStream)
   };
 };
 exports.async = async;

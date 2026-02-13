@@ -5,10 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.replace = exports.render = exports.queueMsg = exports.mapReplace = exports.mapAppend = exports.html = exports.append = void 0;
 var _effect = require("effect");
-var _Channel = require("effect/Channel");
 var _Effect = require("effect/Effect");
-var _Predicate = require("effect/Predicate");
-var _Stream = require("effect/Stream");
 var _litHtml = require("lit-html");
 var _asyncAppend = require("lit-html/directives/async-append.js");
 var _asyncReplace = require("lit-html/directives/async-replace.js");
@@ -26,36 +23,38 @@ const html = exports.html = _litHtml.html;
  * Renders a template result to the container
  */
 const render = (template, root) => _effect.Effect.sync(() => (0, _litHtml.render)(template, root));
+// const isQueue= <A>(val: unknown): val is Queue.Queue<A> => hasProperty(val, Unify.ignoreSymbol) && hasProperty(val[Unify.ignoreSymbol], 'Dequeue')
+// const isStream = <A,E,R>(val: unknown): val is Stream.Stream<A,E,R> => hasProperty(val, Stream)
 exports.render = render;
-const isQueue = val => (0, _Predicate.hasProperty)(val, _effect.Unify.ignoreSymbol) && (0, _Predicate.hasProperty)(val[_effect.Unify.ignoreSymbol], 'Dequeue');
-const isStream = val => (0, _Predicate.hasProperty)(val, _Stream.StreamTypeId);
-const isSubscriptionRef = val => (0, _Predicate.hasProperty)(val, _effect.SubscriptionRef.SubscriptionRefTypeId);
+const isSubscriptionRef = val => _effect.SubscriptionRef.isSubscriptionRef(val);
 const attachableToStream = val => {
   let stream;
-  if ((0, _Channel.isChannel)(val)) {
-    stream = _effect.Stream.fromChannel(val);
-  } else if (isSubscriptionRef(val)) {
-    stream = val.changes;
-  } else if ((0, _Effect.isEffect)(val) && !isQueue(val)) {
+  // if(isChannel(val)) {
+  //     stream = Stream.fromChannel<A,E,R>(val)
+  // } else 
+  if (isSubscriptionRef(val)) {
+    stream = _effect.SubscriptionRef.changes(val);
+  } else if ((0, _Effect.isEffect)(val) && !_effect.Queue.isQueue(val)) {
     stream = _effect.Stream.fromEffect(val);
-  } else if (isQueue(val)) {
+  } else if (_effect.Queue.isQueue(val)) {
     stream = _effect.Stream.fromQueue(val);
-  } else if (isStream(val)) {
+  } else if (_effect.Stream.isStream(val)) {
     stream = val;
   } else {
+    val;
     stream = _effect.Stream.fromPubSub(val);
   }
   return stream;
 };
 /**
  * @since 1.0.0
- * Attaches any Attachable value to the template:
+ * Attaches any Attachable value to the template, replacing old values as new values are produced:
  * ```ts
  * const Counter = () => Effect.gen(function*() {
- *   [ countRef, countQueue ] = yield* CounterService // service made with makeReducer or makeState
+ *   counter = yield* CounterService // service made with State.reducer or State.simple
  *
  *   return html`
- *     <p>The count is ${yield* attach(countRef)}</p>
+ *     <p>The count is ${yield* Dom.replace(counter.stream)}</p>
  *   `
  * })
  * ```
@@ -82,13 +81,11 @@ const mapAppend = (to, fn) => append(_effect.Stream.map(to, fn));
  * as well as a mapping function from the DOM event to the queue's expected event type
  * ```ts
  * const Counter = () => Effect.gen(function*() {
- *   [ countRef, countQueue ] = yield* CounterService // service made with makeReducer
+ *   const numberQueue = yield* Queue.unbounded<number>()
  *
  *   return html`
- *     <button
- *       ＠click=${queueMsg(countQueue, () => Increment())}
- *     > // Increment() is an action defined as part of the CounterService reducer
- *       The count is ${yield* attach(countRef)}
+ *     <button ＠click=${queueMsg(numberQueue, (e) => 0)}>
+ *       Queue up a number!
  *     </button>
  *   `
  * })

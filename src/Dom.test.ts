@@ -61,12 +61,12 @@ describe('Dom module', () => {
         const queue = yield* Queue.unbounded<number>();
         const template = Dom.html`
           <button 
-            @click=${Dom.queueMsg((val: number) => queue.unsafeOffer(val), (e) => 1)}
+            @click=${Dom.queueMsg((val: number) => Queue.offerUnsafe(queue, val), (e) => 1)}
           >Test Button</button>
         `;
         const screen = render(template);
         yield* Effect.promise(() => screen.getByText('Test Button').click());
-        const result = yield* queue.take;
+        const result = yield* Queue.take(queue);
         expect(result).toEqual(1);
       }))
 

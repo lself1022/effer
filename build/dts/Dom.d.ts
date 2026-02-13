@@ -1,8 +1,7 @@
 /**
  * @since 1.0.0
  */
-import { Chunk, Effect, Queue, Stream, SubscriptionRef } from "effect";
-import { type Channel } from "effect/Channel";
+import { Effect, Queue, Stream, SubscriptionRef } from "effect";
 import { type PubSub } from "effect/PubSub";
 import { type RenderRootNode, type TemplateResult } from "lit-html";
 /**
@@ -17,18 +16,18 @@ export declare const html: (strings: TemplateStringsArray, ...values: unknown[])
 export declare const render: (template: TemplateResult, root: RenderRootNode) => Effect.Effect<import("lit-html").RootPart, never, never>;
 /**
  * @since 1.0.0
- * Types that can be attached to the DOM template using Effer's 'attach' method
+ * Types that can be attached to the DOM template using Effer's 'replace' and 'append' methods
  */
-export type Attachable<A, E, R> = Channel<Chunk.Chunk<A>, unknown, E, unknown, unknown, unknown, R> | Effect.Effect<A, E, R> | SubscriptionRef.SubscriptionRef<A> | PubSub<A> | Queue.Queue<A> | Stream.Stream<A, E, R>;
+export type Attachable<A, E, R> = Effect.Effect<A, E, R> | SubscriptionRef.SubscriptionRef<A> | PubSub<A> | Queue.Queue<A, E> | Stream.Stream<A, E, R>;
 /**
  * @since 1.0.0
- * Attaches any Attachable value to the template:
+ * Attaches any Attachable value to the template, replacing old values as new values are produced:
  * ```ts
  * const Counter = () => Effect.gen(function*() {
- *   [ countRef, countQueue ] = yield* CounterService // service made with makeReducer or makeState
+ *   counter = yield* CounterService // service made with State.reducer or State.simple
  *
  *   return html`
- *     <p>The count is ${yield* attach(countRef)}</p>
+ *     <p>The count is ${yield* Dom.replace(counter.stream)}</p>
  *   `
  * })
  * ```
@@ -52,13 +51,11 @@ export declare const mapAppend: <A, E, R>(to: Stream.Stream<A, E, R>, fn: (value
  * as well as a mapping function from the DOM event to the queue's expected event type
  * ```ts
  * const Counter = () => Effect.gen(function*() {
- *   [ countRef, countQueue ] = yield* CounterService // service made with makeReducer
+ *   const numberQueue = yield* Queue.unbounded<number>()
  *
  *   return html`
- *     <button
- *       ＠click=${queueMsg(countQueue, () => Increment())}
- *     > // Increment() is an action defined as part of the CounterService reducer
- *       The count is ${yield* attach(countRef)}
+ *     <button ＠click=${queueMsg(numberQueue, (e) => 0)}>
+ *       Queue up a number!
  *     </button>
  *   `
  * })

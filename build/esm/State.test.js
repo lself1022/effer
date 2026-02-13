@@ -1,12 +1,6 @@
-import { describe, expect } from "vitest";
-import { it } from "@effect/vitest";
-import { Array, Chunk, Data, Effect, Match, Stream } from "effect";
-import { State } from "./index";
-
+export {};
 // describe('State module', () => {
-
 //     describe('reducer function', () => {
-
 //         it.scoped('should update state based on dispatched messages', () => Effect.gen(function*() {
 //             const initialState = { count: 0 }
 //             type State = typeof initialState
@@ -25,11 +19,8 @@ import { State } from "./index";
 //             result = yield* getCount
 //             expect(result[0].count).toEqual(1)
 //         }))
-
 //     })
-
 //     describe('simple function', () => {
-
 //         it.scoped('should set new value with set method', () => Effect.gen(function*() {
 //             const counter = yield* State.simple<number>(0)
 //             const getCount = yield* Stream.toPull<number,never,never>(counter.stream)
@@ -39,7 +30,6 @@ import { State } from "./index";
 //             result = yield* getCount
 //             expect(result[0]).toEqual(1)
 //         }))
-
 //         it.scoped('should update value with update method', () => Effect.gen(function*() {
 //             const counter = yield* State.simple<number>(0)
 //             const getCount = yield* Stream.toPull<number,never,never>(counter.stream)
@@ -49,11 +39,8 @@ import { State } from "./index";
 //             result = yield* getCount
 //             expect(result[0]).toEqual(1)
 //         }))
-
 //     })
-
 //     // describe('async function', () => {
-
 //     //     it.scoped('should return loading and success states for async effect', () => Effect.gen(function*() {
 //     //         const asyncFn = async () => {
 //     //             setTimeout(() => {}, 2000)
@@ -68,7 +55,6 @@ import { State } from "./index";
 //     //         state = yield* getState
 //     //         expect(result.is('Success')(state) && state.data).toEqual(0)
 //     //     }))
-
 //     //     it.scoped('should return error state for failed async effect', () => Effect.gen(function*() {
 //     //         class TestError extends Data.Error<{ message: string }> {}
 //     //         const asyncEffect = Effect.gen(function*() {
@@ -86,6 +72,6 @@ import { State } from "./index";
 //     //         state = yield* getState
 //     //         expect(result.is('Failure')(state) && state.error.message).toEqual('an error')
 //     //     }))
-
 //     // })
 // })
+//# sourceMappingURL=State.test.js.map

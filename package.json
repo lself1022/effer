@@ -31,9 +31,7 @@
     "test:browser": "vitest"
   },
   "dependencies": {
-    "@typed/id": "^0.17.2",
-    "@typed/navigation": "^0.18.1",
-    "effect": "^3.18.4",
+    "effect": "https://pkg.pr.new/Effect-TS/effect-smol/effect@4b4a34b",
     "lit-html": "^3.3.1"
   },
   "devDependencies": {
@@ -44,7 +42,7 @@
     "@effect/build-utils": "^0.8.9",
     "@effect/eslint-plugin": "^0.3.2",
     "@effect/language-service": "latest",
-    "@effect/vitest": "^0.25.1",
+    "@effect/vitest": "https://pkg.pr.new/Effect-TS/effect-smol/@effect/vitest@51a2fe1",
     "@eslint/compat": "1.1.1",
     "@eslint/eslintrc": "3.1.0",
     "@eslint/js": "9.10.0",

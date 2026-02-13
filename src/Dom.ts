@@ -7,7 +7,6 @@ import { isChannel, type Channel } from "effect/Channel";
 import { isEffect } from "effect/Effect";
 import { hasProperty } from "effect/Predicate";
 import { type PubSub } from "effect/PubSub";
-import { StreamTypeId } from "effect/Stream";
 import { html as _html, render as _render, type RenderRootNode, type TemplateResult } from "lit-html";
 import { asyncAppend } from "lit-html/directives/async-append.js";
 import { asyncReplace } from "lit-html/directives/async-replace.js";
@@ -30,29 +29,31 @@ export const render = (template: TemplateResult, root: RenderRootNode) =>
  * Types that can be attached to the DOM template using Effer's 'replace' and 'append' methods
  */
 export type Attachable<A,E,R> = 
-    | Channel<Chunk.Chunk<A>, unknown, E, unknown, unknown, unknown, R> 
+    // | Channel<A, E, unknown, unknown, unknown, unknown, R> 
     | Effect.Effect<A,E,R> 
     | SubscriptionRef.SubscriptionRef<A>
     | PubSub<A> 
-    | Queue.Queue<A> 
+    | Queue.Queue<A,E> 
     | Stream.Stream<A,E,R>
-const isQueue= <A>(val: unknown): val is Queue.Queue<A> => hasProperty(val, Unify.ignoreSymbol) && hasProperty(val[Unify.ignoreSymbol], 'Dequeue')
-const isStream = <A,E,R>(val: unknown): val is Stream.Stream<A,E,R> => hasProperty(val, StreamTypeId)
-const isSubscriptionRef = <A>(val: unknown): val is SubscriptionRef.SubscriptionRef<A> => hasProperty(val, SubscriptionRef.SubscriptionRefTypeId)
+// const isQueue= <A>(val: unknown): val is Queue.Queue<A> => hasProperty(val, Unify.ignoreSymbol) && hasProperty(val[Unify.ignoreSymbol], 'Dequeue')
+// const isStream = <A,E,R>(val: unknown): val is Stream.Stream<A,E,R> => hasProperty(val, Stream)
+const isSubscriptionRef = <A>(val: unknown): val is SubscriptionRef.SubscriptionRef<A> => SubscriptionRef.isSubscriptionRef(val)
 
 const attachableToStream = <A,E=never,R=never>(val: Attachable<A,E,R>) => {
     let stream: Stream.Stream<A,E,R>;
-    if(isChannel(val)) {
-        stream = Stream.fromChannel<A,E,R>(val)
-    } else if (isSubscriptionRef<A>(val)) {
-        stream = val.changes
-    } else if(isEffect(val) && !isQueue<A>(val)) {
+    // if(isChannel(val)) {
+    //     stream = Stream.fromChannel<A,E,R>(val)
+    // } else 
+    if (isSubscriptionRef<A>(val)) {
+        stream = SubscriptionRef.changes<A>(val)
+    } else if(isEffect(val) && !Queue.isQueue<A,E>(val)) {
         stream = Stream.fromEffect(val)
-    } else if(isQueue<A>(val)) {
-        stream = Stream.fromQueue(val)
-    } else if(isStream<A,E,R>(val)) {
+    } else if(Queue.isQueue<A,E>(val)) {
+        stream = Stream.fromQueue<A,E>(val)
+    } else if(Stream.isStream(val)) {
         stream = val
     } else {
+        val
         stream = Stream.fromPubSub(val)
     }
     return stream
