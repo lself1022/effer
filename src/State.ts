@@ -2,7 +2,7 @@
  * @since 1.0.0
  */
 
-import { Data, Effect, Queue, Stream, SubscriptionRef } from "effect";
+import { Effect, Queue, Stream, SubscriptionRef } from "effect";
 
 /**
  * @since 1.0.0

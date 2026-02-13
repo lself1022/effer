@@ -2,10 +2,8 @@
  * @since 1.0.0
  */
 
-import { Chunk, Effect, Queue, Stream, SubscriptionRef, Unify, pipe } from "effect";
-import { isChannel, type Channel } from "effect/Channel";
+import { Effect, Queue, Stream, SubscriptionRef, pipe } from "effect";
 import { isEffect } from "effect/Effect";
-import { hasProperty } from "effect/Predicate";
 import { type PubSub } from "effect/PubSub";
 import { html as _html, render as _render, type RenderRootNode, type TemplateResult } from "lit-html";
 import { asyncAppend } from "lit-html/directives/async-append.js";
