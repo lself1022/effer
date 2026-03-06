@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       effect:
-        specifier: https://pkg.pr.new/Effect-TS/effect-smol/effect@4b4a34b
-        version: https://pkg.pr.new/Effect-TS/effect-smol/effect@4b4a34b
+        specifier: beta
+        version: 4.0.0-beta.28
       lit-html:
         specifier: ^3.3.1
         version: 3.3.2
@@ -38,7 +38,7 @@ importers:
         version: 0.64.1
       '@effect/vitest':
         specifier: https://pkg.pr.new/Effect-TS/effect-smol/@effect/vitest@51a2fe1
-        version: https://pkg.pr.new/Effect-TS/effect-smol/@effect/vitest@51a2fe1(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@4b4a34b)(vitest@3.2.4)
+        version: https://pkg.pr.new/Effect-TS/effect-smol/@effect/vitest@51a2fe1(effect@4.0.0-beta.28)(vitest@3.2.4)
       '@eslint/compat':
         specifier: 1.1.1
         version: 1.1.1
@@ -1231,9 +1231,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@4b4a34b:
-    resolution: {tarball: https://pkg.pr.new/Effect-TS/effect-smol/effect@4b4a34b}
-    version: 4.0.0
+  effect@4.0.0-beta.28:
+    resolution: {integrity: sha512-9T/LPIF/t54DN/z1gTnJ3Jwv4s6iWlN3w8Jvg7koDLI4whLXDEsnXWhMf05yQZUSNRJ0naVV1Ltwr2+cEj0HZA==}
 
   electron-to-chromium@1.5.267:
     resolution: {integrity: sha512-0Drusm6MVRXSOJpGbaSVgcQsuB4hEkMpHXaVstcPmhu5LIedxs1xNK/nIxmQIU/RPC0+1/o0AVZfBTkTNJOdUw==}
@@ -1617,9 +1616,9 @@ packages:
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
 
-  ini@5.0.0:
-    resolution: {integrity: sha512-+N0ngpO3e7cRUWOJAS7qw0IZIVc6XPrW4MlFBdD066F2L4k1L6ker3hLqSq7iXxU5tgS4WGkIUElWn5vogAEnw==}
-    engines: {node: ^18.17.0 || >=20.5.0}
+  ini@6.0.0:
+    resolution: {integrity: sha512-IBTdIkzZNOpqm7q3dRqJvMaldXjDHWkEDfrwGEQTs5eaQMWV+djAhR+wahyNNMAa+qpbDUhBMVt4ZKNwpPm7xQ==}
+    engines: {node: ^20.17.0 || >=22.9.0}
 
   internal-slot@1.1.0:
     resolution: {integrity: sha512-4gd7VpWNQNB4UKKCFFVcp1AVv+FMOgs9NKzjHKusc8jTMhd5eL1NqQqOpE0KzMds804/yHlglp3uxgluOqAPLw==}
@@ -2815,9 +2814,9 @@ snapshots:
 
   '@effect/language-service@0.64.1': {}
 
-  '@effect/vitest@https://pkg.pr.new/Effect-TS/effect-smol/@effect/vitest@51a2fe1(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@4b4a34b)(vitest@3.2.4)':
+  '@effect/vitest@https://pkg.pr.new/Effect-TS/effect-smol/@effect/vitest@51a2fe1(effect@4.0.0-beta.28)(vitest@3.2.4)':
     dependencies:
-      effect: https://pkg.pr.new/Effect-TS/effect-smol/effect@4b4a34b
+      effect: 4.0.0-beta.28
       vitest: 3.2.4(@types/node@22.19.3)(@vitest/browser@3.2.4)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   '@emnapi/core@1.8.1':
@@ -3735,12 +3734,12 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@4b4a34b:
+  effect@4.0.0-beta.28:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 4.5.3
       find-my-way-ts: 0.1.6
-      ini: 5.0.0
+      ini: 6.0.0
       kubernetes-types: 1.30.0
       msgpackr: 1.11.8
       multipasta: 0.2.7
@@ -4255,7 +4254,7 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  ini@5.0.0: {}
+  ini@6.0.0: {}
 
   internal-slot@1.1.0:
     dependencies:
