@@ -1,11 +1,11 @@
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 
 import { Data, Effect, Queue, Stream, SubscriptionRef } from "effect";
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Creates a stream of the latest state value, and a queue to update the value.
  * @param initialState The starting state value
  * @param updateFn An effectful function that takes the old state, an update message, and returns a new state
@@ -43,7 +43,7 @@ export const reducer = <A,M,E=never,R=never>(initialState: A, updateFn: (state: 
 })
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 export const simple = <A>(initialState: A) => Effect.gen(function*() {
     const subRef = yield* SubscriptionRef.make<A>(initialState)
@@ -62,7 +62,7 @@ export const simple = <A>(initialState: A) => Effect.gen(function*() {
 })
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 export type Result<A,E> = Data.TaggedEnum<{
     Loading: {}
@@ -71,7 +71,7 @@ export type Result<A,E> = Data.TaggedEnum<{
 }> & {}
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 export const async = <A,E,R>(effect: Effect.Effect<A,E,R>) => {
     const { Loading, Success, Failure, $is, $match } = Data.taggedEnum<Result<A,E>>()

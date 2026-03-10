@@ -1,5 +1,5 @@
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 
 import { Chunk, Effect, Queue, Stream, SubscriptionRef, Unify, pipe } from "effect";
@@ -14,19 +14,19 @@ import { asyncReplace } from "lit-html/directives/async-replace.js";
 
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Create an HTML template result that can be rendered to the DOM
  */
 export const html = _html
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Renders a template result to the container
  */
 export const render = (template: TemplateResult, root: RenderRootNode) =>
     Effect.sync(() => _render(template, root));
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Types that can be attached to the DOM template using Effer's 'attach' and 'append' methods
  */
 export type Attachable<A,E,R> = 
@@ -59,7 +59,7 @@ const attachableToStream = <A,E=never,R=never>(val: Attachable<A,E,R>) => {
 }
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Attaches any Attachable value to the template, replacing old values as new values are produced:
  * ```ts
  * const Counter = () => Effect.gen(function*() {
@@ -77,14 +77,14 @@ export const attach = <A,E=never,R=never>(val: Attachable<A,E,R>) => attachableT
 )
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 export const append = <A, E, R>(to: Stream.Stream<A, E, R>) =>
     Effect.map(Stream.toAsyncIterableEffect(to), asyncAppend);
 
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Used in place of an event handler callback, this function takes a queue to dispatch messages to, 
  * as well as a mapping function from the DOM event to the queue's expected event type
  * ```ts
