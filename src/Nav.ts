@@ -2,7 +2,7 @@
  * @since 0.2.0
  */
 
-import { Context, Effect, Layer, Ref, Stream } from "effect";
+import { Context, Effect, Layer, Ref, Stream, SubscriptionRef } from "effect";
 import { NoSuchElementException } from "effect/Cause";
 import * as TypedNav from "@typed/navigation";
 import { GetRandomValues } from "@typed/id";
@@ -16,69 +16,39 @@ import { TemplateResult } from "lit-html";
 export class Nav extends Context.Tag('@effer/NavService')<
     Nav, 
     {
-        url: Ref.Ref<URL>;
-        pathStream: Stream.Stream<URL>;
-        router: <R>(routeFn: (path: string) => Effect.Effect<TemplateResult<1>, never, R>) => Stream.Stream<Effect.Effect<TemplateResult<1>, never, R>, never, never>;
+        urlRef: SubscriptionRef.SubscriptionRef<URL>;
+        pathStream: Stream.Stream<string>;
         getQueryParam: (name: string) => Effect.Effect<string, NoSuchElementException, never>
         navigate: typeof window.navigation.navigate;
     }
 >() {}
 
 export const BrowserLayer = Layer.effect(Nav, Effect.gen(function*() {
-    const url = yield* Ref.make<URL>(new URL(window.navigation.currentEntry?.url!))
+    const urlRef = yield* SubscriptionRef.make<URL>(new URL(window.navigation.currentEntry?.url!))
     const pathStream = Stream.fromEventListener<NavigateEvent>(window.navigation, 'navigate').pipe(
         Stream.map(e => new URL(e.destination.url)),
         Stream.merge(Stream.make(new URL(window.navigation.currentEntry?.url!))),
-        Stream.tap(u => Ref.set(url, u))
+        Stream.tap(u => SubscriptionRef.set(urlRef, u)),
+        Stream.map(url => url.pathname)
     )
     const getQueryParam = (name: string) => Effect.gen(function*() {
-        const result: string | null = (yield* Ref.get(url)).searchParams.get(name)
+        const result: string | null = (yield* SubscriptionRef.get(urlRef)).searchParams.get(name)
         if(result === null) {
             yield* Effect.fail(new NoSuchElementException())
         }
         return result!
     })
-    const router = <R>(routeFn: (path: string) => Effect.Effect<TemplateResult<1>, never, R>): Stream.Stream<Effect.Effect<TemplateResult<1>, never, R>, never, never> => pathStream.pipe(
-        Stream.map(url => url.pathname),
-        Stream.map(routeFn)
-    )
     return {
         /**
          * @since 0.2.0
-         * The current URL object
+         * The current URL object in a SubscriptionRef
          */
-        url,
+        urlRef,
         /**
          * @since 0.2.0
          * A stream of the current app path ('/', '/actuator', etc.)
          */
         pathStream,
-        /**
-         * @since 0.2.0
-         * Takes a function that maps the current pathname to an Effer template:
-         * ```ts
-         * const App = () => Effect.gen(function*() {
-         *   const nav = yield* Nav
-         *   const page = Nav.router(
-         *      (path: string) => {
-         *          switch(path) {
-         *              case '/counters':
-         *                  return Counter // an Effer template of type Effect<TemplateResult, never, R>
-         *              case '/todos':
-         *                  return Todos // an Effer template of type Effect<TemplateResult, never, R>
-         *          }
-         *      }
-         *   )
-         * 
-         *   return html`
-         *      <main>
-         *          ${ yield* Dom.attach(page) }
-         *      </main>
-         *   `
-         * })
-         * ```
-         */
-        router,
         /**
          * @since 0.2.0
          * Method used to navigate. Accepts a URL string and navigates the page
