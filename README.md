@@ -38,7 +38,7 @@ export const Counter = () =>
         >
           - 1
         </button>
-        Count is ${yield* Dom.replace(count.stream)}
+        Count is ${yield* Dom.attach(count.stream)}
         <button
           class="btn btn-primary btn-sm counter-button"
           id="incButton"
@@ -68,10 +68,10 @@ Counter().pipe(
 );
 ```
 
-In the UI, we need to represent data changing over time. Effect gives us Streams as a way to do that. The replace and append functions of Effer's Dom module let you "attach" a stream (or anything that can be converted to a Stream) to the UI. Replace will ensure only the most up-to-date value is shown, while append will append values to that point in the DOM as they are available.
+In the UI, we need to represent data changing over time. Effect gives us Streams as a way to do that. The attach and append functions of Effer's Dom module let you "attach" a stream (or anything that can be converted to a Stream) to the UI. attach will ensure only the most up-to-date value is shown, while append will append values to that point in the DOM as they are available.
 
 ```ts
-Dom.html`<p>Count is ${yield* Dom.replace(counterStream)}</p>`;
+Dom.html`<p>Count is ${yield* Dom.attach(counterStream)}</p>`;
 ```
 
 Here is a complete list of what can be attached:
@@ -242,7 +242,7 @@ export const App = () =>
       Stream.map(navFn)
     );
     // attaching the page stream to the template so the current page displays
-    return Dom.html` <main class="w-100">${yield* Dom.replace(page)}</main> `;
+    return Dom.html` <main class="w-100">${yield* Dom.attach(page)}</main> `;
   }).pipe(
     Effect.provide(Nav.BrowserLayer) // Providing the Nav service via the browser APIs
   );
@@ -267,7 +267,7 @@ You can see example code and play around with Effer by forking this CodeSandbox 
 
 Where to find specific examples:
 
-- the `replace()` function: All of the Effer components in the sandboxs use replace
+- the `attach()` function: All of the Effer components in the sandboxs use attach
 - the `State.simple()` function: counter.ts
 - the `State.reducer()` function: todo.controller.ts
 - the `State.async()` function: posts.api.ts and posts.view.ts

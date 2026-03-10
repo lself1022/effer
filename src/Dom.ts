@@ -27,7 +27,7 @@ export const render = (template: TemplateResult, root: RenderRootNode) =>
 
 /**
  * @since 1.0.0
- * Types that can be attached to the DOM template using Effer's 'replace' and 'append' methods
+ * Types that can be attached to the DOM template using Effer's 'attach' and 'append' methods
  */
 export type Attachable<A,E,R> = 
     | Channel<Chunk.Chunk<A>, unknown, E, unknown, unknown, unknown, R> 
@@ -66,12 +66,12 @@ const attachableToStream = <A,E=never,R=never>(val: Attachable<A,E,R>) => {
  *   counter = yield* CounterService // service made with State.reducer or State.simple
  * 
  *   return html`
- *     <p>The count is ${yield* Dom.replace(counter.stream)}</p>
+ *     <p>The count is ${yield* Dom.attach(counter.stream)}</p>
  *   `
  * })
  * ```
  */
-export const replace = <A,E=never,R=never>(val: Attachable<A,E,R>) => attachableToStream(val).pipe(
+export const attach = <A,E=never,R=never>(val: Attachable<A,E,R>) => attachableToStream(val).pipe(
     Stream.toAsyncIterableEffect,
     Effect.map(iter => asyncReplace(iter))
 )
@@ -79,26 +79,9 @@ export const replace = <A,E=never,R=never>(val: Attachable<A,E,R>) => attachable
 /**
  * @since 1.0.0
  */
-export const mapReplace = <A, E, R>(val: Attachable<A,E,R>, fn: (value: A) => unknown) => pipe(
-    attachableToStream(val),
-    Stream.map(fn),
-    Stream.toAsyncIterableEffect,
-    Effect.map(asyncReplace)
-  )
-
-/**
- * @since 1.0.0
- */
 export const append = <A, E, R>(to: Stream.Stream<A, E, R>) =>
     Effect.map(Stream.toAsyncIterableEffect(to), asyncAppend);
-  
-/**
- * @since 1.0.0
- */
-export const mapAppend = <A, E, R>(
-to: Stream.Stream<A, E, R>,
-fn: (value: A) => unknown,
-) => append(Stream.map(to, fn));
+
 
 /**
  * @since 1.0.0
