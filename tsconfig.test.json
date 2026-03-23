@@ -5,7 +5,7 @@
       { "path": "tsconfig.src.json" }
     ],
     "compilerOptions": {
-      "types": ["node","dom-navigation"],
+      "types": ["node","dom-navigation","@vitest/browser/matchers"],
       "tsBuildInfoFile": ".tsbuildinfo/test.tsbuildinfo",
       "rootDir": "test",
       "noEmit": true
