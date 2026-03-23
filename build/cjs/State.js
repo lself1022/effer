@@ -6,11 +6,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.simple = exports.reducer = exports.async = void 0;
 var _effect = require("effect");
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Creates a stream of the latest state value, and a queue to update the value.
  * @param initialState The starting state value
  * @param updateFn An effectful function that takes the old state, an update message, and returns a new state
@@ -28,7 +28,7 @@ var _effect = require("effect");
  * })
  *
  * // Inside an Effect
- * const {stream, dispatch} = yield* reducer(0, counterReducer)
+ * const {stream, dispatch} = yield* State.reducer(0, counterReducer)
  * ```
  */
 const reducer = (initialState, updateFn) => _effect.Effect.gen(function* () {
@@ -45,7 +45,7 @@ const reducer = (initialState, updateFn) => _effect.Effect.gen(function* () {
   };
 });
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 exports.reducer = reducer;
 const simple = initialState => _effect.Effect.gen(function* () {
@@ -64,7 +64,7 @@ const simple = initialState => _effect.Effect.gen(function* () {
   };
 });
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 exports.simple = simple;
 const async = effect => {

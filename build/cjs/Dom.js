@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.replace = exports.render = exports.queueMsg = exports.mapReplace = exports.mapAppend = exports.html = exports.append = void 0;
+exports.render = exports.queueMsg = exports.html = exports.attach = exports.append = void 0;
 var _effect = require("effect");
 var _Channel = require("effect/Channel");
 var _Effect = require("effect/Effect");
@@ -13,16 +13,16 @@ var _litHtml = require("lit-html");
 var _asyncAppend = require("lit-html/directives/async-append.js");
 var _asyncReplace = require("lit-html/directives/async-replace.js");
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Create an HTML template result that can be rendered to the DOM
  */
 const html = exports.html = _litHtml.html;
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Renders a template result to the container
  */
 const render = (template, root) => _effect.Effect.sync(() => (0, _litHtml.render)(template, root));
@@ -48,53 +48,41 @@ const attachableToStream = val => {
   return stream;
 };
 /**
- * @since 1.0.0
- * Attaches any Attachable value to the template:
+ * @since 0.2.0
+ * Attaches any Attachable value to the template, replacing old values as new values are produced:
  * ```ts
  * const Counter = () => Effect.gen(function*() {
- *   [ countRef, countQueue ] = yield* CounterService // service made with makeReducer or makeState
+ *   counter = yield* CounterService // service made with State.reducer or State.simple
  *
  *   return html`
- *     <p>The count is ${yield* attach(countRef)}</p>
+ *     <p>The count is ${yield* Dom.attach(counter.stream)}</p>
  *   `
  * })
  * ```
  */
-const replace = val => attachableToStream(val).pipe(_effect.Stream.toAsyncIterableEffect, _effect.Effect.map(iter => (0, _asyncReplace.asyncReplace)(iter)));
+const attach = val => attachableToStream(val).pipe(_effect.Stream.toAsyncIterableEffect, _effect.Effect.map(iter => (0, _asyncReplace.asyncReplace)(iter)));
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
-exports.replace = replace;
-const mapReplace = (val, fn) => (0, _effect.pipe)(attachableToStream(val), _effect.Stream.map(fn), _effect.Stream.toAsyncIterableEffect, _effect.Effect.map(_asyncReplace.asyncReplace));
-/**
- * @since 1.0.0
- */
-exports.mapReplace = mapReplace;
+exports.attach = attach;
 const append = to => _effect.Effect.map(_effect.Stream.toAsyncIterableEffect(to), _asyncAppend.asyncAppend);
 /**
- * @since 1.0.0
- */
-exports.append = append;
-const mapAppend = (to, fn) => append(_effect.Stream.map(to, fn));
-/**
- * @since 1.0.0
+ * @since 0.2.0
  * Used in place of an event handler callback, this function takes a queue to dispatch messages to,
  * as well as a mapping function from the DOM event to the queue's expected event type
  * ```ts
  * const Counter = () => Effect.gen(function*() {
- *   [ countRef, countQueue ] = yield* CounterService // service made with makeReducer
+ *   const numberQueue = yield* Queue.unbounded<number>()
  *
  *   return html`
- *     <button
- *       ＠click=${queueMsg(countQueue, () => Increment())}
- *     > // Increment() is an action defined as part of the CounterService reducer
- *       The count is ${yield* attach(countRef)}
+ *     <button ＠click=${queueMsg(numberQueue, (e) => 0)}>
+ *       Queue up a number!
  *     </button>
  *   `
  * })
  * ```
  */
-exports.mapAppend = mapAppend;
+exports.append = append;
 const queueMsg = (offer, mapper) => {
   if (mapper) {
     return e => offer(mapper(e));

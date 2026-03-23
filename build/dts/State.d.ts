@@ -1,9 +1,9 @@
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 import { Data, Effect, Stream } from "effect";
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Creates a stream of the latest state value, and a queue to update the value.
  * @param initialState The starting state value
  * @param updateFn An effectful function that takes the old state, an update message, and returns a new state
@@ -21,7 +21,7 @@ import { Data, Effect, Stream } from "effect";
  * })
  *
  * // Inside an Effect
- * const {stream, dispatch} = yield* reducer(0, counterReducer)
+ * const {stream, dispatch} = yield* State.reducer(0, counterReducer)
  * ```
  */
 export declare const reducer: <A, M, E = never, R = never>(initialState: A, updateFn: (state: A, msg: M) => Effect.Effect<A, E, R>) => Effect.Effect<{
@@ -29,7 +29,7 @@ export declare const reducer: <A, M, E = never, R = never>(initialState: A, upda
     dispatch: (msg: M) => boolean;
 }, never, R>;
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 export declare const simple: <A>(initialState: A) => Effect.Effect<{
     readonly stream: Stream.Stream<A, never, never>;
@@ -37,7 +37,7 @@ export declare const simple: <A>(initialState: A) => Effect.Effect<{
     readonly update: (updateFn: (oldValue: A) => A) => boolean;
 }, never, never>;
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 export type Result<A, E> = Data.TaggedEnum<{
     Loading: {};
@@ -49,7 +49,7 @@ export type Result<A, E> = Data.TaggedEnum<{
     };
 }> & {};
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 export declare const async: <A, E, R>(effect: Effect.Effect<A, E, R>) => {
     stream: Stream.Stream<Result<A, E>, never, R>;

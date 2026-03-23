@@ -1,9 +1,9 @@
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 import { Data, Effect, Queue, Stream, SubscriptionRef } from "effect";
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Creates a stream of the latest state value, and a queue to update the value.
  * @param initialState The starting state value
  * @param updateFn An effectful function that takes the old state, an update message, and returns a new state
@@ -21,7 +21,7 @@ import { Data, Effect, Queue, Stream, SubscriptionRef } from "effect";
  * })
  *
  * // Inside an Effect
- * const {stream, dispatch} = yield* reducer(0, counterReducer)
+ * const {stream, dispatch} = yield* State.reducer(0, counterReducer)
  * ```
  */
 export const reducer = (initialState, updateFn) => Effect.gen(function* () {
@@ -38,7 +38,7 @@ export const reducer = (initialState, updateFn) => Effect.gen(function* () {
   };
 });
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 export const simple = initialState => Effect.gen(function* () {
   const subRef = yield* SubscriptionRef.make(initialState);
@@ -56,7 +56,7 @@ export const simple = initialState => Effect.gen(function* () {
   };
 });
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
 export const async = effect => {
   const {

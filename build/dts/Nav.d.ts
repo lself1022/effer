@@ -1,21 +1,21 @@
 /**
- * @since 1.0.0
+ * @since 0.2.0
  */
-import { Context, Effect, Layer, Ref, Stream } from "effect";
+import { Context, Effect, Layer, Stream, SubscriptionRef } from "effect";
 import { NoSuchElementException } from "effect/Cause";
-declare const NavService_base: Context.TagClass<NavService, "NavService", {
-    url: Ref.Ref<URL>;
-    pathStream: Stream.Stream<URL>;
+declare const Nav_base: Context.TagClass<Nav, "@effer/NavService", {
+    urlRef: SubscriptionRef.SubscriptionRef<URL>;
+    pathStream: Stream.Stream<string>;
     getQueryParam: (name: string) => Effect.Effect<string, NoSuchElementException, never>;
     navigate: typeof window.navigation.navigate;
 }>;
 /**
- * @since 1.0.0
+ * @since 0.2.0
  * Effer's service to interact with navigation. Provides the current URL object, a stream of the
  * current app path, a method to get a query param from the URL, and a method to navigate the page.
  */
-export declare class NavService extends NavService_base {
-    static Live: Layer.Layer<NavService, never, never>;
+export declare class Nav extends Nav_base {
 }
+export declare const BrowserLayer: Layer.Layer<Nav, never, never>;
 export {};
 //# sourceMappingURL=Nav.d.ts.map
