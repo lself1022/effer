@@ -17,7 +17,9 @@ declare global {
 
 const EventRunner = BrowserStream.fromEventListenerWindow("effer").pipe(
 	Stream.mapEffect(e => e.effect),
-	Stream.runDrain
+	Stream.runDrain,
+	Effect.forever,
+	Effect.fork
 )
 
 export const EventLayer = Layer.effectDiscard(EventRunner)
