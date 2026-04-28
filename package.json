@@ -31,6 +31,7 @@
     "test:browser": "vitest"
   },
   "dependencies": {
+    "@effect/platform-browser": "^0.76.0",
     "@typed/id": "^0.17.2",
     "@typed/navigation": "^0.18.1",
     "effect": "^3.18.4",

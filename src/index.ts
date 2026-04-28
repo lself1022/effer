@@ -12,3 +12,5 @@ export * as Nav from "./Nav"
  * @since 1.0.0
  */
 export * as State from "./State"
+
+export * as Event from "./Event"
