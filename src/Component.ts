@@ -38,3 +38,11 @@ export class Component<M,R> extends Effectable.Class<DirectiveResult<typeof Asyn
         })
     }
 }
+
+type Msg = "Increment" | "Decrement"
+
+const Counter = make({
+    controller(msg) {
+        
+    },
+})
