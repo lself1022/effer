@@ -16,3 +16,5 @@ export * as State from "./State"
 export * as Event from "./Event"
 
 export * as Handler from "./Handler"
+
+export * as Component from "./Component"
