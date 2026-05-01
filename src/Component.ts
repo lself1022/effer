@@ -12,6 +12,8 @@ export interface ComponentDef<M,R> {
     view: (dispatch: (msg: M) => void) => Effect.Effect<DirectiveResult<typeof AsyncReplaceDirective>, never, R>
 }
 
+export const make = <M,R>(componentDef: ComponentDef<M,R>) => new Component(componentDef)
+
 export class Component<M,R> extends Effectable.Class<DirectiveResult<typeof AsyncReplaceDirective>, never, R> {
     componentDef: ComponentDef<M,R>
 
